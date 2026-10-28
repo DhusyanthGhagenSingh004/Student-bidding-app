@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -14,8 +14,9 @@ export default function RegisterPage() {
   const [confirmPw, setConfirmPw] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!name || !email || !campusId || !password || !confirmPw) {
@@ -30,9 +31,11 @@ export default function RegisterPage() {
       setError('Password must be at least 6 characters');
       return;
     }
-    const ok = register(name, email, campusId, password);
-    if (ok) navigate('/marketplace');
-    else setError('Registration failed');
+    setSubmitting(true);
+    const result = await register(name, email, campusId, password);
+    setSubmitting(false);
+    if (result.ok) navigate('/marketplace');
+    else setError(result.error ?? 'Registration failed');
   };
 
   return (
@@ -157,9 +160,11 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              className="mt-2 w-full rounded-xl bg-primary-500 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition hover:bg-primary-600 hover:shadow-xl hover:shadow-primary-500/30 active:scale-[0.98]"
+              disabled={submitting}
+              className="mt-2 w-full rounded-xl bg-primary-500 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition hover:bg-primary-600 hover:shadow-xl hover:shadow-primary-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Sign Up
+              {submitting && <Loader2 size={16} className="animate-spin" />}
+              {submitting ? 'Creating account...' : 'Sign Up'}
             </button>
           </form>
 

@@ -13,8 +13,24 @@ import NotificationsPage from './pages/notifications/NotificationsPage';
 import RegisterPage from './pages/RegisterPage';
 
 function AppRoutes() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
+
+  // Show a subtle loading state while restoring session
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface-50">
+        <div className="flex flex-col items-center gap-3 animate-fade-in">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-500">
+            <span className="text-xl font-extrabold text-white">C</span>
+          </div>
+          <div className="h-1 w-24 overflow-hidden rounded-full bg-surface-200">
+            <div className="h-full w-1/2 rounded-full bg-primary-500 animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Pages that don't show the navbar
   const noNavPages = ['/login', '/register'];
@@ -27,21 +43,27 @@ function AppRoutes() {
       <div className="flex flex-1">
         <Routes>
           {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/login"
+            element={isAuthenticated ? <Navigate to="/marketplace" replace /> : <LoginPage />}
+          />
+          <Route
+            path="/register"
+            element={isAuthenticated ? <Navigate to="/marketplace" replace /> : <RegisterPage />}
+          />
 
-          {/* Protected routes */}
-          <Route path="/marketplace" element={<MarketplacePage />} />
-          <Route path="/auction/:id" element={<AuctionDetailPage />} />
-          <Route path="/create-listing" element={<CreateListingPage />} />
-          <Route path="/seller-dashboard" element={<SellerDashboardPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/my-activity" element={<MyActivityPage />} />
-          <Route path="/review/:id" element={<ReviewWinningBidPage />} />
-          <Route path="/handover/:id" element={<HandoverConfirmationPage />} />
+          {/* Protected routes — redirect to login if not authenticated */}
+          <Route path="/marketplace" element={isAuthenticated ? <MarketplacePage /> : <Navigate to="/login" replace />} />
+          <Route path="/auction/:id" element={isAuthenticated ? <AuctionDetailPage /> : <Navigate to="/login" replace />} />
+          <Route path="/create-listing" element={isAuthenticated ? <CreateListingPage /> : <Navigate to="/login" replace />} />
+          <Route path="/seller-dashboard" element={isAuthenticated ? <SellerDashboardPage /> : <Navigate to="/login" replace />} />
+          <Route path="/notifications" element={isAuthenticated ? <NotificationsPage /> : <Navigate to="/login" replace />} />
+          <Route path="/my-activity" element={isAuthenticated ? <MyActivityPage /> : <Navigate to="/login" replace />} />
+          <Route path="/review/:id" element={isAuthenticated ? <ReviewWinningBidPage /> : <Navigate to="/login" replace />} />
+          <Route path="/handover/:id" element={isAuthenticated ? <HandoverConfirmationPage /> : <Navigate to="/login" replace />} />
 
           {/* Default redirect */}
-          <Route path="*" element={<Navigate to="/marketplace" replace />} />
+          <Route path="*" element={<Navigate to={isAuthenticated ? '/marketplace' : '/login'} replace />} />
         </Routes>
       </div>
     </div>

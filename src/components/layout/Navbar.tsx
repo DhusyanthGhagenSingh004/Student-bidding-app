@@ -1,9 +1,12 @@
-import { Bell, Search, User } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Bell, LogOut, User } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { notifications } from '../../data/mockData';
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const unreadCount = notifications.filter((n) => !n.readAt).length;
 
   const navLinks = [
@@ -11,6 +14,11 @@ export default function Navbar() {
     { to: '/my-activity', label: 'My Activity' },
     { to: '/notifications', label: 'Notifications' },
   ];
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-surface-200 bg-white/80 backdrop-blur-md">
@@ -59,9 +67,18 @@ export default function Navbar() {
           <Link
             to="/seller-dashboard"
             className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500 text-white transition hover:bg-primary-600"
+            title={user?.name ?? 'Profile'}
           >
             <User size={16} />
           </Link>
+
+          <button
+            onClick={handleLogout}
+            className="rounded-full p-2 text-surface-500 transition hover:bg-danger-500/10 hover:text-danger-500"
+            title="Logout"
+          >
+            <LogOut size={18} />
+          </button>
         </div>
       </div>
     </header>

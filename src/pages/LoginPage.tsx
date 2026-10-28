@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -11,17 +11,20 @@ export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!email || !password) {
       setError('Please fill in all fields');
       return;
     }
-    const ok = login(email, password);
-    if (ok) navigate('/marketplace');
-    else setError('Invalid credentials');
+    setSubmitting(true);
+    const result = await login(email, password);
+    setSubmitting(false);
+    if (result.ok) navigate('/marketplace');
+    else setError(result.error ?? 'Invalid credentials');
   };
 
   return (
@@ -121,9 +124,11 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-primary-500 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition hover:bg-primary-600 hover:shadow-xl hover:shadow-primary-500/30 active:scale-[0.98]"
+              disabled={submitting}
+              className="w-full rounded-xl bg-primary-500 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition hover:bg-primary-600 hover:shadow-xl hover:shadow-primary-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Login
+              {submitting && <Loader2 size={16} className="animate-spin" />}
+              {submitting ? 'Signing in...' : 'Login'}
             </button>
           </form>
 
